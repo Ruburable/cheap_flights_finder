@@ -1,0 +1,23 @@
+[Unit]
+Description=Flight Deal Bot - Automated price monitoring
+After=network.target
+
+[Service]
+Type=simple
+User=your_username
+WorkingDirectory=/path/to/flight-bot
+ExecStart=/usr/bin/python3 /path/to/flight-bot/main.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=append:/path/to/flight-bot/logs/flight-bot.log
+StandardError=append:/path/to/flight-bot/logs/flight-bot-error.log
+
+# Environment variables (alternative to config.yaml)
+# Environment="EMAIL_RECIPIENT=your@email.com"
+# Environment="GMAIL_SENDER=bot@gmail.com"
+# Environment="GMAIL_PASSWORD=your_password"
+# Environment="AMADEUS_API_KEY=your_key"
+# Environment="AMADEUS_API_SECRET=your_secret"
+
+[Install]
+WantedBy=multi-user.target

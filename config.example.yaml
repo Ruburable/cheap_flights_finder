@@ -1,0 +1,121 @@
+# Flight Deal Bot Configuration
+# Copy this file to config.yaml and edit with your settings
+
+#═══════════════════════════════════════════════════════════
+# EMAIL SETTINGS
+#═══════════════════════════════════════════════════════════
+email:
+  recipient: "your.email@gmail.com"
+  sender_gmail: "your.bot@gmail.com"
+  smtp_password: "your_16_char_app_password"  # Get from https://myaccount.google.com/apppasswords
+  
+  alert_frequency: "major_deals_only"  # Options: immediate, daily_digest, major_deals_only
+  major_deal_threshold_percent: 20     # Only alert if >20% below average
+
+#═══════════════════════════════════════════════════════════
+# API CREDENTIALS
+#═══════════════════════════════════════════════════════════
+api:
+  amadeus_api_key: "YOUR_AMADEUS_API_KEY"
+  amadeus_api_secret: "YOUR_AMADEUS_API_SECRET"
+
+#═══════════════════════════════════════════════════════════
+# ROUTE CONFIGURATION
+#═══════════════════════════════════════════════════════════
+routes:
+  origin: "WAW"
+  destinations:
+    - "GRU"  # São Paulo
+    - "GIG"  # Rio de Janeiro
+
+#═══════════════════════════════════════════════════════════
+# DATE FLEXIBILITY (VARIABLE)
+#═══════════════════════════════════════════════════════════
+dates:
+  search_window_days: 180
+  departure_flexibility_days: 7
+  
+  trip_length:
+    minimum_days: 10
+    maximum_days: 21
+    preferred_days: 14
+    flexible_duration: true
+    
+  target_periods:
+    - start_date: "2026-06-01"
+      end_date: "2026-08-31"
+      label: "Summer"
+
+#═══════════════════════════════════════════════════════════
+# CONNECTION PREFERENCES (VARIABLE)
+#═══════════════════════════════════════════════════════════
+connections:
+  max_stops: 1
+  min_layover_hours: 1.5
+  max_layover_hours: 6.0
+  
+  preferred_hubs:
+    - "FRA"
+    - "AMS"
+    - "MAD"
+    - "LIS"
+    - "IST"
+    
+  avoid_airlines: []
+  allow_overnight_layover: false
+  penalize_long_layovers: true
+  penalize_airport_changes: true
+
+#═══════════════════════════════════════════════════════════
+# AIRPORT FLEXIBILITY (VARIABLE)
+#═══════════════════════════════════════════════════════════
+airport_flexibility:
+  different_return_airport: true
+  max_ground_transport_cost: 200
+  include_ground_transport_in_price: true
+  warn_about_ground_transport: true
+
+#═══════════════════════════════════════════════════════════
+# RISK TOLERANCE (VARIABLE)
+#═══════════════════════════════════════════════════════════
+separate_tickets:
+  enabled: true
+  minimum_savings_percent: 20
+  safe_self_transfer_hours: 4.0
+  risk_tolerance: "moderate"  # conservative, moderate, aggressive
+  show_risk_warnings: true
+
+#═══════════════════════════════════════════════════════════
+# PRICE THRESHOLDS (VARIABLE)
+#═══════════════════════════════════════════════════════════
+price_alerts:
+  currency: "PLN"
+  
+  thresholds:
+    amazing_deal: 2000
+    great_deal: 2500
+    good_deal: 3000
+    
+  percentage_thresholds:
+    amazing_deal_percent: 25
+    great_deal_percent: 20
+    good_deal_percent: 15
+    
+  comparison_period_days: 30
+  require_both_conditions: false
+
+#═══════════════════════════════════════════════════════════
+# ADVANCED OPTIONS
+#═══════════════════════════════════════════════════════════
+advanced:
+  check_frequency_hours: 6
+  keep_detailed_history_days: 30
+  keep_aggregated_history_days: 365
+  
+  show_price_history_chart: false
+  show_booking_links: true
+  show_alternative_dates: true
+  
+  log_level: "INFO"
+  send_error_notifications: true
+  database_path: "data/flights.db"

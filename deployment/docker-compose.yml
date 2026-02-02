@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  flight-bot:
+    build:
+      context: ..
+      dockerfile: deployment/Dockerfile
+    container_name: flight-deal-bot
+    restart: unless-stopped
+    volumes:
+      - ../data:/app/data
+      - ../logs:/app/logs
+      - ../config.yaml:/app/config.yaml:ro
+    environment:
+      # Optional: Override config with environment variables
+      - EMAIL_RECIPIENT=${EMAIL_RECIPIENT}
+      - GMAIL_SENDER=${GMAIL_SENDER}
+      - GMAIL_PASSWORD=${GMAIL_PASSWORD}
+      - AMADEUS_API_KEY=${AMADEUS_API_KEY}
+      - AMADEUS_API_SECRET=${AMADEUS_API_SECRET}
+    # Uncomment to use .env file
+    # env_file:
+    #   - ../.env

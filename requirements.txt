@@ -1,0 +1,22 @@
+# Core dependencies
+pyyaml>=6.0.1
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Amadeus API
+amadeus>=9.0.0
+
+# Scheduling
+APScheduler>=3.10.4
+
+# Database
+sqlalchemy>=2.0.23
+
+# Email
+email-validator>=2.1.0
+
+# Date handling
+python-dateutil>=2.8.2
+
+# Logging
+colorlog>=6.8.0
