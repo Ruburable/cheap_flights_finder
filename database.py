@@ -52,10 +52,19 @@ class Database:
                 airlines TEXT,
                 connections TEXT,
                 checked_at TIMESTAMP NOT NULL,
-                offer_data TEXT,
-                INDEX idx_route_date (route, checked_at),
-                INDEX idx_checked_at (checked_at)
+                offer_data TEXT
             )
+        """)
+
+        # Create indexes separately (SQLite standard syntax)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_route_date 
+            ON price_checks(route, checked_at)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_checked_at 
+            ON price_checks(checked_at)
         """)
 
         # Daily statistics (aggregated data)
@@ -101,9 +110,14 @@ class Database:
                 inbound_info TEXT,
                 booking_link TEXT,
                 found_at TIMESTAMP NOT NULL,
-                notified BOOLEAN DEFAULT 0,
-                INDEX idx_found_at (found_at)
+                notified BOOLEAN DEFAULT 0
             )
+        """)
+
+        # Create index separately
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_found_at 
+            ON deals(found_at)
         """)
 
         conn.commit()
@@ -190,9 +204,9 @@ class Database:
             conn.close()
 
     def get_price_statistics(
-            self,
-            route: str,
-            days: int = 30
+        self,
+        route: str,
+        days: int = 30
     ) -> Dict[str, float]:
         """Get price statistics for a route over the last N days"""
         conn = self._get_connection()
@@ -247,9 +261,9 @@ class Database:
         return [dict(row) for row in rows]
 
     def cleanup_old_data(
-            self,
-            detailed_days: int = 30,
-            aggregate_days: int = 365
+        self,
+        detailed_days: int = 30,
+        aggregate_days: int = 365
     ):
         """
         Clean up old data and create aggregates
