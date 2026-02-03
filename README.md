@@ -27,10 +27,6 @@ Automated flight price monitoring system that finds and alerts you about cheap f
 ### 2. Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/flight-deal-bot.git
-cd flight-deal-bot
-
 # Install dependencies (IMPORTANT: Only run this!)
 pip install -r requirements.txt
 ```
@@ -306,25 +302,6 @@ sqlite3 data/flights.db "SELECT * FROM deals ORDER BY found_at DESC LIMIT 10;"
 1. Check process: `ps aux | grep main.py`
 2. Check logs: `tail -f logs/flight-bot.log`
 3. Verify schedule: `cat /var/log/syslog | grep flight-bot`
-
-## 🤝 Contributing
-
-Feel free to open issues or submit PRs!
-
-## 📝 License
-
-MIT License - feel free to use and modify
-
-## 🙏 Credits
-
-- Flight data: Amadeus API
-- Inspiration: Wanting to visit Brazil without breaking the bank
-
-## 📞 Support
-
-- Issues: GitHub Issues
-- Questions: GitHub Discussions
-- Email: your@email.com
 
 ---
 
