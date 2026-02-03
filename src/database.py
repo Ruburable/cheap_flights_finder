@@ -52,12 +52,10 @@ class Database:
                 airlines TEXT,
                 connections TEXT,
                 checked_at TIMESTAMP NOT NULL,
-                offer_data TEXT,
-                INDEX idx_route_date (route, checked_at),
-                INDEX idx_checked_at (checked_at)
+                offer_data TEXT
             )
         """)
-        
+
         # Daily statistics (aggregated data)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS daily_stats (
@@ -71,7 +69,7 @@ class Database:
                 PRIMARY KEY (date, route)
             )
         """)
-        
+
         # Monthly statistics (long-term aggregates)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS monthly_stats (
@@ -83,7 +81,7 @@ class Database:
                 PRIMARY KEY (month, route)
             )
         """)
-        
+
         # Deals found (always keep these)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS deals (
@@ -101,23 +99,22 @@ class Database:
                 inbound_info TEXT,
                 booking_link TEXT,
                 found_at TIMESTAMP NOT NULL,
-                notified BOOLEAN DEFAULT 0,
-                INDEX idx_found_at (found_at)
+                notified BOOLEAN DEFAULT 0
             )
         """)
-        
+
         conn.commit()
         conn.close()
-    
+
     def add_price_check(self, flight_data: Dict[str, Any]):
         """Add a new price check to the database"""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         try:
             # Extract data
             route = f"{flight_data['origin']}-{flight_data['destination']}"
-            
+
             cursor.execute("""
                 INSERT INTO price_checks (
                     route, origin, destination, departure_date, return_date,
@@ -139,24 +136,24 @@ class Database:
                 datetime.now(),
                 str(flight_data.get('raw_offer', ''))
             ))
-            
+
             conn.commit()
             logger.debug(f"Added price check: {route} - {flight_data['price']} {flight_data['currency']}")
-            
+
         except Exception as e:
             logger.error(f"Error adding price check: {e}")
             conn.rollback()
         finally:
             conn.close()
-    
+
     def add_deal(self, deal_data: Dict[str, Any]):
         """Record a deal that was found"""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         try:
             route = f"{deal_data['origin']}-{deal_data['destination']}"
-            
+
             cursor.execute("""
                 INSERT INTO deals (
                     route, origin, destination, departure_date, return_date,
@@ -179,16 +176,16 @@ class Database:
                 datetime.now(),
                 deal_data.get('notified', False)
             ))
-            
+
             conn.commit()
             logger.info(f"Recorded deal: {route} - {deal_data['price']} {deal_data['currency']}")
-            
+
         except Exception as e:
             logger.error(f"Error adding deal: {e}")
             conn.rollback()
         finally:
             conn.close()
-    
+
     def get_price_statistics(
         self,
         route: str,
@@ -197,9 +194,9 @@ class Database:
         """Get price statistics for a route over the last N days"""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         cutoff_date = datetime.now() - timedelta(days=days)
-        
+
         cursor.execute("""
             SELECT
                 MIN(price) as min_price,
@@ -209,10 +206,10 @@ class Database:
             FROM price_checks
             WHERE route = ? AND checked_at > ?
         """, (route, cutoff_date))
-        
+
         row = cursor.fetchone()
         conn.close()
-        
+
         if row and row['num_checks'] > 0:
             return {
                 'min': row['min_price'],
@@ -221,7 +218,7 @@ class Database:
                 'count': row['num_checks'],
                 'period_days': days
             }
-        
+
         return {
             'min': None,
             'max': None,
@@ -229,23 +226,23 @@ class Database:
             'count': 0,
             'period_days': days
         }
-    
+
     def get_recent_deals(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent deals found"""
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         cursor.execute("""
             SELECT * FROM deals
             ORDER BY found_at DESC
             LIMIT ?
         """, (limit,))
-        
+
         rows = cursor.fetchall()
         conn.close()
-        
+
         return [dict(row) for row in rows]
-    
+
     def cleanup_old_data(
         self,
         detailed_days: int = 30,
@@ -253,18 +250,18 @@ class Database:
     ):
         """
         Clean up old data and create aggregates
-        
+
         Args:
             detailed_days: Keep detailed checks for this many days
             aggregate_days: Keep daily aggregates for this many days
         """
         conn = self._get_connection()
         cursor = conn.cursor()
-        
+
         try:
             # Aggregate old detailed data into daily stats
             cutoff_detailed = datetime.now() - timedelta(days=detailed_days)
-            
+
             cursor.execute("""
                 INSERT OR REPLACE INTO daily_stats
                 SELECT
@@ -279,18 +276,18 @@ class Database:
                 WHERE checked_at < ?
                 GROUP BY DATE(checked_at), route
             """, (cutoff_detailed,))
-            
+
             # Delete old detailed records
             cursor.execute("""
                 DELETE FROM price_checks
                 WHERE checked_at < ?
             """, (cutoff_detailed,))
-            
+
             deleted_count = cursor.rowcount
-            
+
             # Create monthly aggregates from old daily stats
             cutoff_aggregate = datetime.now() - timedelta(days=aggregate_days)
-            
+
             cursor.execute("""
                 INSERT OR REPLACE INTO monthly_stats
                 SELECT
@@ -303,19 +300,19 @@ class Database:
                 WHERE date < ?
                 GROUP BY strftime('%Y-%m', date), route
             """, (cutoff_aggregate,))
-            
+
             # Delete old daily stats
             cursor.execute("""
                 DELETE FROM daily_stats
                 WHERE date < ?
             """, (cutoff_aggregate,))
-            
-            # Vacuum to reclaim space
-            cursor.execute("VACUUM")
-            
+
             conn.commit()
+
+            # Vacuum to reclaim space (must be outside transaction)
+            cursor.execute("VACUUM")
             logger.info(f"Cleanup complete: Removed {deleted_count} old price checks")
-            
+
         except Exception as e:
             logger.error(f"Error during cleanup: {e}")
             conn.rollback()
